@@ -108,7 +108,9 @@ Option (1) is fast and consistent with how large networks are often wired; optio
 ## 5) REAClib 7‑parameter fit (what our code evaluates)
 
 REAClib rates are provided as **fits** to tabulated $N_A\langle\sigma v\rangle(T_9)$, designed for very fast evaluation. For one coefficient set $a_1,\dots,a_7$,
+
 $$N_A\langle\sigma v\rangle(T_9)= \exp\!\Big(a_1 + a_2T_9^{-1} + a_3T_9^{-1/3} + a_4T_9^{1/3} + a_5T_9 + a_6T_9^{5/3} + a_7\ln T_9\Big)$$
+
 (as implemented in `ratelab/reaclib.py`). 
 
 Many reactions have **multiple sets** (different temperature regions / components). We sum them:

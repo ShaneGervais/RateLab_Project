@@ -18,13 +18,15 @@ This repo is a **learning-by-coding** implementation of a *small* thermonuclear 
 
 ### Mass fraction $X_i$ and mole fraction / molar abundance $Y_i$
 Iliadis defines:
-$$X_i \equiv \frac{N_i M_i}{\rho N_A}\qquad\text{and}\qquadY_i \equiv \frac{X_i}{M_i} = \frac{N_i}{\rho N_A}$$
+$$X_i \equiv \frac{N_i M_i}{\rho N_A}\qquad$$
+and 
+$$\qquadY_i \equiv \frac{X_i}{M_i} = \frac{N_i}{\rho N_A}$$
 - $X_i$: fraction of *mass* in species \(i\) (dimensionless)  
 - $Y_i$: **mole fraction / molar abundance** (often treated as “mol per gram” in practice); it stays constant under pure expansion/compression if no reactions occur (useful numerically).
 
 **Useful identity** (from $Y_i = N_i/(\rho N_A)$:
 $N_i = \rho N_A Y_i$
-This is what turns *per‑volume* rates into *ODEs for $Y$*.
+This is what turns *per‑volume* rates into *ODEs for *Y.
 
 ---
 
@@ -32,7 +34,9 @@ This is what turns *per‑volume* rates into *ODEs for $Y$*.
 
 ### From “pairs collide” to $\langle\sigma v\rangle$
 For a two‑body reaction \(0+1 \to ...\), Iliadis starts with:
-$r_{01} = N_0 N_1 \int_0^\infty v\,P(v)\,\sigma(v)\,dv \equiv N_0 N_1 <\sigma v>_{01}$
+
+$$r_{01} = N_0 N_1 \int_0^\infty v\,P(v)\,\sigma(v)\,dv \equiv N_0 N_1 <\sigma v>_{01}$$
+
 (where $r_{01}$ is reactions per unit volume per unit time). 
 
 For **identical reactants**, the number of distinct pairs is reduced by 1/2; Iliadis writes the general expression using a Kronecker‑delta factor.  
@@ -52,7 +56,9 @@ In practice, the literature typically tabulates:
 - $N_A\langle\sigma v\rangle$ in $[\mathrm{cm^3\,mol^{-1}\,s^{-1}}]$ 
 
 Iliadis also gives a convenient numerical form:
+
 $$N_A\langle\sigma v\rangle= 3.7318\times 10^{10}\,\frac{1}{T_9^{3/2}}\sqrt{\frac{M_0+M_1}{M_0 M_1}}\int_0^\infty E\sigma(E)\,e^{-11.605\,E/T_9}\,dE$$
+
 (with $E$ in MeV, $T_9 \equiv T/10^9\ \mathrm{K}$, $\sigma$ in barns). 
 
 And explicitly:
@@ -68,11 +74,15 @@ $$T_9 \equiv \frac{T}{10^9\ \mathrm{K}}$$
 ## 3) Turning rates into abundance ODEs
 
 Using $N_i=\rho N_A Y_i$, a **two‑body capture** $i+j\to k$ has (schematically):
-$\frac{dY_i}{dt}\sim -\rho\,Y_iY_j\,N_A <\sigma v>_{ij\to k},\qquad\frac{dY_k}{dt}\sim +\rho\,Y_iY_j\,N_A <\sigma v>_{ij\to k}.$
+
+$$\frac{dY_i}{dt}\sim -\rho\,Y_iY_j\,N_A <\sigma v>_{ij\to k},\qquad\frac{dY_k}{dt}\sim +\rho\,Y_iY_j\,N_A <\sigma v>_{ij\to k}.$$
+
 This is exactly the structure implemented in `ratelab/network.py` for each α‑capture step. 
 
 A **photodisintegration** (reverse) reaction acts like a **decay** with rate (decay constant) $\lambda_\gamma$:
-$\frac{dY_{\text{parent}}}{dt} = -\lambda_\gamma\,Y_{\text{parent}}$
+
+$$\frac{dY_{\text{parent}}}{dt} = -\lambda_\gamma\,Y_{\text{parent}}$$
+
 (see Iliadis’ general decay‑constant definition).
 
 ---
@@ -138,10 +148,12 @@ In this repo we use a simplified “shock_trajectory” parameterization in code
 
 A helpful diagnostic is the **abundance flux** for each reaction, i.e. the instantaneous flow of material through a link.
 
-For an α‑capture $ \alpha + i \to k$:
+For an α‑capture $\alpha + i \to k$:
+
 $$F_{\alpha i\to k}(t) = \rho(t)\,Y_\alpha(t)\,Y_i(t)\,N_A <\sigma v>_{\alpha i\to k}(T_9(t))$$
 
 For a photodisintegration $k\to \alpha + i$:
+
 $$F_{k\to \alpha i}(t) = \lambda_\gamma(T_9(t))\,Y_k(t)$$
 
 (Your `fluxes()` helper in `network.py` should return these as a dictionary so `run_onezone.py` can plot them.)

@@ -20,7 +20,7 @@ This repo is a **learning-by-coding** implementation of a *small* thermonuclear 
 Iliadis defines:
 $$X_i \equiv \frac{N_i M_i}{\rho N_A}$$
 and 
-$$\qquadY_i \equiv \frac{X_i}{M_i} = \frac{N_i}{\rho N_A}$$
+$$Y_i \equiv \frac{X_i}{M_i} = \frac{N_i}{\rho N_A}$$
 - $X_i$: fraction of *mass* in species \(i\) (dimensionless)  
 - $Y_i$: **mole fraction / molar abundance** (often treated as “mol per gram” in practice); it stays constant under pure expansion/compression if no reactions occur (useful numerically).
 

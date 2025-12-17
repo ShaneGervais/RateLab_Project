@@ -18,7 +18,7 @@ This repo is a **learning-by-coding** implementation of a *small* thermonuclear 
 
 ### Mass fraction $X_i$ and mole fraction / molar abundance $Y_i$
 Iliadis defines:
-$$X_i \equiv \frac{N_i M_i}{\rho N_A}\qquad$$
+$$X_i \equiv \frac{N_i M_i}{\rho N_A}$$
 and 
 $$\qquadY_i \equiv \frac{X_i}{M_i} = \frac{N_i}{\rho N_A}$$
 - $X_i$: fraction of *mass* in species \(i\) (dimensionless)  
@@ -48,6 +48,7 @@ $P(v)\,dv = \left(\frac{m_{01}}{2\pi kT}\right)^{3/2} e^{-m_{01}v^2/(2kT)} 4\pi 
 and can be rewritten as an **energy distribution** $P(E)\,dE$. 
 
 With that, Iliadis obtains the standard Maxwellian average:
+
 $$<\sigma v>_{01} = \left(\frac{8}{\pi m_{01}}\right)^{1/2}\frac{1}{(kT)^{3/2}}\int_0^\infty E\,\sigma(E)\,e^{-E/kT}\,dE$$
 
 

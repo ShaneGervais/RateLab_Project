@@ -31,7 +31,7 @@ def extract_sets(original_source: str):
 
 rl = na.ReacLibLibrary()
 
-for name in ["o16(a,g)ne20", "ne20(a,g)mg24", "mg24(a,g)si28", "si28(a,g)s32"]:
+for name in ["o16(a,g)ne20", "ne20(a,g)mg24", "mg24(a,g)si28", "si28(a,g)s32", "ne20(g,a)o16", "mg24(g,a)ne20", "si28(g,a)mg24", "s32(g,a)si28"]:
     r = rl.get_rate_by_name(name)
     print("\n===", name, "===")
     print(r)

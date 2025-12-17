@@ -14,3 +14,7 @@ def shock_trajectory(t, T9_peak=5.0, tau=0.15, T9_floor=0.05):
 
     T9 = T9_peak*np.exp(-t/tau)
     return np.maximum(T9, T9_floor)
+
+# expansion rate
+def rho_expansion(t, rho0=1e6, tau_rho=0.15):
+    return rho0 * np.exp(-t / tau_rho)

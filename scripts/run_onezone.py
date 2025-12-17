@@ -55,7 +55,7 @@ def main():
     rho = 1e6           # g/cm^3 (toy value) (this can either fasten or slower the burning depending on the value)
     T9_peak = 1         # can change the threshold of the X value and need for cooling
     tau = 0.2          # s (fast cooling) time for the system to cool and reach a constant X
-    t_end = 0.5         # s if this number is way bigger then cooling time tau, you'll see a freeze out effect happen more constantly
+    t_end = 2         # s if this number is way bigger then cooling time tau, you'll see a freeze out effect happen more constantly
 
     traj = lambda t: shock_trajectory(t, T9_peak, tau) # check trajectory lib for default settings
 

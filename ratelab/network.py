@@ -26,17 +26,33 @@ class AlphaChain:
         self.C_Si28r = np.asarray(coef["si28_ga_mg24"], dtype=float)
         self.C_S32r  = np.asarray(coef["s32_ga_si28"], dtype=float)
 
-    def rates(self, T9: float):
-        # scalar rates (fast path)
-        r_o16  = reaclib_rate_scalar(T9, self.C_O16)
-        r_ne20 = reaclib_rate_scalar(T9, self.C_Ne20)
-        r_mg24 = reaclib_rate_scalar(T9, self.C_Mg24)
-        r_si28 = reaclib_rate_scalar(T9, self.C_Si28)
+        # multiplicative factors for sensitivity studies (default = 1)
+        self.f = {
+            "o16_ag_ne20": 1.0,
+            "ne20_ag_mg24": 1.0,
+            "mg24_ag_si28": 1.0,
+            "si28_ag_s32": 1.0,
+            "ne20_ga_o16": 1.0,
+            "mg24_ga_ne20": 1.0,
+            "si28_ga_mg24": 1.0,
+            "s32_ga_si28": 1.0,
+        }
 
-        lam_ne20 = reaclib_rate_scalar(T9, self.C_Ne20r)
-        lam_mg24 = reaclib_rate_scalar(T9, self.C_Mg24r)
-        lam_si28 = reaclib_rate_scalar(T9, self.C_Si28r)
-        lam_s32  = reaclib_rate_scalar(T9, self.C_S32r)
+
+    def rates(self, T9: float):
+
+        # scalar rates (fast path)
+        r_o16  = reaclib_rate_scalar(T9, self.C_O16)  * self.f["o16_ag_ne20"]
+        r_ne20 = reaclib_rate_scalar(T9, self.C_Ne20) * self.f["ne20_ag_mg24"]
+        r_mg24 = reaclib_rate_scalar(T9, self.C_Mg24) * self.f["mg24_ag_si28"]
+        r_si28 = reaclib_rate_scalar(T9, self.C_Si28) * self.f["si28_ag_s32"]
+
+        lam_ne20 = reaclib_rate_scalar(T9, self.C_Ne20r) * self.f["ne20_ga_o16"]
+        lam_mg24 = reaclib_rate_scalar(T9, self.C_Mg24r) * self.f["mg24_ga_ne20"]
+        lam_si28 = reaclib_rate_scalar(T9, self.C_Si28r) * self.f["si28_ga_mg24"]
+        lam_s32  = reaclib_rate_scalar(T9, self.C_S32r)  * self.f["s32_ga_si28"]
+
+
         return r_o16, r_ne20, r_mg24, r_si28, lam_ne20, lam_mg24, lam_si28, lam_s32
 
     def rhs(self, t, Y, T9_traj, rho_traj):
@@ -143,6 +159,10 @@ class AlphaChain:
         ], dtype=float)
 
         return np.concatenate([dY, dphi])
+    
+    def set_factor(self, name: str, value: float):
+        self.f[name] = float(value)
+
 
 
 # Backwards-compatible function wrappers (match your scripts)

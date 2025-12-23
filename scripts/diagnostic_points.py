@@ -104,12 +104,23 @@ def main():
         (3.7, 0.03, "ridge"),
         (2.0, 0.03, "cool"),
         (5.2, 0.03, "hot"),
+        (4.5, 0.10, "hot_slowcool"),
     ]
 
     for T9p, tau, tag in points:
         out = run_onezone_diagnostic(T9p, tau, rho0, Y0, n_eval=800)
         plot_diagnostic(out, tag)
         print(tag, "phis =", out["phis"], "final X32 =", out["Xt"][-1, S32])
+        phi_O16, phi_Ne20, phi_Mg24, phi_Si28 = out["phis"]
+        X32_final = out["Xt"][-1, S32]
+
+        print(f"\n[{tag}]  T9_peak={T9p:.3f}  tau={tau:.4g}  rho0={rho0:.3g}")
+        print(f"  phis:")
+        print(f"    phi_O16  (O16→Ne20) = {phi_O16:.6g}")
+        print(f"    phi_Ne20 (Ne20→Mg24)= {phi_Ne20:.6g}")
+        print(f"    phi_Mg24 (Mg24→Si28)= {phi_Mg24:.6g}")
+        print(f"    phi_Si28 (Si28→S32) = {phi_Si28:.6g}")
+        print(f"  final X32 = {X32_final:.6g}")
 
 
 

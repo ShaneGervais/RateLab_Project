@@ -58,6 +58,11 @@ def run_onezone_diagnostic(T9_peak, tau, rho0, Y0, n_eval=800):
         "phis": (phi_O16, phi_Ne20, phi_Mg24, phi_Si28),
         "net_fluxes": (net_O16, net_Ne20, net_Mg24, net_Si28),
     }
+    out["net"] = net
+    out["T9_traj"] = T9_traj
+    out["rho_traj"] = rho_traj
+    out["t"] = t
+    out["Yt"] = Yt
     return out
 
 def plot_diagnostic(out, tag):
@@ -93,6 +98,49 @@ def plot_diagnostic(out, tag):
     plt.tight_layout()
     plt.savefig(f"diag_netflux_{tag}.png", dpi=200)
 
+def plot_forward_reverse(out, tag):
+    import numpy as np
+    import matplotlib.pyplot as plt
+
+    t  = out["t"]     # (n,)
+    Yt = out["Yt"]    # (6, n)
+    T9_traj  = out["T9_traj"]
+    rho_traj = out["rho_traj"]
+    net = out["net"]  # AlphaChain instance
+
+    # Build forward/reverse flux arrays by evaluating net.fluxes at each time
+    names = [
+        ("O16_ag_Ne20",  "Ne20_ga_O16",  "O16 ↔ Ne20"),
+        ("Ne20_ag_Mg24", "Mg24_ga_Ne20", "Ne20 ↔ Mg24"),
+        ("Mg24_ag_Si28", "Si28_ga_Mg24", "Mg24 ↔ Si28"),
+        ("Si28_ag_S32",  "S32_ga_Si28",  "Si28 ↔ S32"),
+    ]
+
+    Ff = {fwd: np.zeros_like(t, dtype=float) for fwd,_,_ in names}
+    Fr = {rev: np.zeros_like(t, dtype=float) for _,rev,_ in names}
+
+    for k, tk in enumerate(t):
+        F = net.fluxes(tk, Yt[:, k], T9_traj=T9_traj, rho_traj=rho_traj)
+        for fwd, rev, _lab in names:
+            Ff[fwd][k] = float(F[fwd])
+            Fr[rev][k] = float(F[rev])
+
+    plt.figure(figsize=(7, 5))
+    for fwd, rev, lab in names:
+        plt.loglog(t, np.abs(Ff[fwd]) + 1e-300, label=f"{lab} forward")
+        plt.loglog(t, np.abs(Fr[rev]) + 1e-300, ls="--", label=f"{lab} reverse")
+
+    plt.xlabel("t [s]")
+    plt.ylabel(r"Flux magnitude $|F|$  [1/s in Y-space]")
+    plt.title(f"Forward vs reverse fluxes ({tag})")
+    plt.legend(fontsize=8)
+    plt.tight_layout()
+    plt.savefig(f"onezone_fwd_rev_{tag}.png", dpi=300)
+    print(f"Saved onezone_fwd_rev_{tag}.png")
+
+
+
+
 def main():
     rho0 = 1e6
     X0 = np.zeros(6)
@@ -121,6 +169,9 @@ def main():
         print(f"    phi_Mg24 (Mg24→Si28)= {phi_Mg24:.6g}")
         print(f"    phi_Si28 (Si28→S32) = {phi_Si28:.6g}")
         print(f"  final X32 = {X32_final:.6g}")
+        plot_diagnostic(out, tag)
+        plot_forward_reverse(out, tag)
+
 
 
 

@@ -137,62 +137,113 @@ def main():
     # -----------------------------
     # 3) Scan grid
     # -----------------------------
-    rho0 = 1e6  # g/cm^3 (hold fixed for this project)
+    #rho0 = 1e6  # g/cm^3 (hold fixed for this project)
+    rho_vals = np.logspace(5, 8, 8)  # g/cm^3
 
     T9_vals  = np.linspace(1.0, 6.0, 25)          # peak temperature
     tau_vals = np.logspace(np.log10(0.02), np.log10(1.0), 25)  # cooling time in s
+    ridge_list = []
 
-    # store heatmap for one interesting product (e.g., S32)
-    X_S32_map = np.zeros((len(tau_vals), len(T9_vals)))
+    for rho0 in rho_vals:
 
-    out_csv = "scan_T9peak_tau.csv"
-    with open(out_csv, "w", newline="") as f:
-        w = csv.writer(f)
-        w.writerow([
-            "T9_peak", "tau_s", "rho0",
-            "X_He4", "X_O16", "X_Ne20", "X_Mg24", "X_Si28", "X_S32",
-            "baryon_drift",
-            "phi_net_O16_to_Ne20",
-            "phi_net_Ne20_to_Mg24",
-            "phi_net_Mg24_to_Si28",
-            "phi_net_Si28_to_S32",
-        ])
+        # store heatmap for one interesting product (e.g., S32)
+        X_S32_map = np.zeros((len(tau_vals), len(T9_vals)))
+        out_csv = f"scan_T9peak_tau_rho{rho0:.1e}.csv"
 
-        for itau, tau in enumerate(tau_vals):
-            for iT, T9_peak in enumerate(T9_vals):
-                Yf = run_onezone(T9_peak, tau, rho0, Y0)   # (6,)
-                Xf = Y_to_X(Yf)                            # (6,)
-                drift = np.nan
-                phi_O16 = phi_Ne20 = phi_Mg24 = phi_Si28 = np.nan
+        with open(out_csv, "w", newline="") as f:
+            w = csv.writer(f)
+            w.writerow([
+                "T9_peak", "tau_s", "rho0",
+                "X_He4", "X_O16", "X_Ne20", "X_Mg24", "X_Si28", "X_S32",
+                "baryon_drift",
+                "phi_net_O16_to_Ne20",
+                "phi_net_Ne20_to_Mg24",
+                "phi_net_Mg24_to_Si28",
+                "phi_net_Si28_to_S32",
+            ])
 
-                X_S32_map[itau, iT] = Xf[S32]
+            for itau, tau in enumerate(tau_vals):
+                for iT, T9_peak in enumerate(T9_vals):
+                    Yf = run_onezone(T9_peak, tau, rho0, Y0)   # (6,)
+                    Xf = Y_to_X(Yf)                            # (6,)
+                    drift = 0.0
+                    phi_O16 = phi_Ne20 = phi_Mg24 = phi_Si28 = np.nan
+                    X_S32_map[itau, iT] = Xf[S32]
 
-                w.writerow([
-                    float(T9_peak), float(tau), float(rho0),
-                    float(Xf[He4]), float(Xf[O16]), float(Xf[Ne20]),
-                    float(Xf[Mg24]), float(Xf[Si28]), float(Xf[S32]),
-                    float(drift),
-                    phi_O16, phi_Ne20, phi_Mg24, phi_Si28
-                ])
+                    w.writerow([
+                        float(T9_peak), float(tau), float(rho0),
+                        float(Xf[He4]), float(Xf[O16]), float(Xf[Ne20]),
+                        float(Xf[Mg24]), float(Xf[Si28]), float(Xf[S32]),
+                        float(drift),
+                        phi_O16, phi_Ne20, phi_Mg24, phi_Si28
+                    ])
+        print(f"Wrote {out_csv}")
+        
+        plt.figure()
+        im = plt.imshow(
+            X_S32_map,
+            origin="lower",
+            aspect="auto",
+            extent=[T9_vals[0], T9_vals[-1], np.log10(tau_vals[0]), np.log10(tau_vals[-1])]
+        )
+        plt.colorbar(im, label=r"final $X(^{32}\mathrm{S})$")
+        plt.xlabel(r"$T_{9,\mathrm{peak}}$")
+        plt.ylabel(r"$\log_{10}(\tau\ \mathrm{s})$")
+        plt.tight_layout()
+        plt.savefig(f"heatmap_X_S32_rho{rho0:.1e}.png", dpi=300)
+        plt.close()
+        print(f"Saved heatmap_X_S32_rho{rho0:.1e}.png")
 
-    print(f"Wrote {out_csv}")
+        ridge_max = float(np.max(X_S32_map))
+        ridge_list.append((float(rho0), ridge_max))
+        
+    #print("ridge_list (raw):", ridge_list)
+
+    ridge_arr = np.array(ridge_list, dtype=float)
+    #ridge_list = np.array(ridge_list, dtype=float)
+    rho_plot = ridge_arr[:, 0]
+    ridge_max_plot = ridge_arr[:, 1]
+
+
+    # handle the case where it's shape (N,) because only ridge_max got appended
+    if ridge_arr.ndim == 1:
+        raise RuntimeError(
+        f"ridge_list is 1D (shape={ridge_arr.shape}). "
+        "You probably appended only ridge_max instead of (rho0, ridge_max). "
+        f"ridge_list={ridge_list[:5]} ..."
+    )
+
+
+
 
     # -----------------------------
     # 4) Heatmap plot: final X_S32(T9_peak, tau)
     # -----------------------------
-    plt.figure()
-    im = plt.imshow(
-        X_S32_map,
-        origin="lower",
-        aspect="auto",
-        extent=[T9_vals[0], T9_vals[-1], np.log10(tau_vals[0]), np.log10(tau_vals[-1])]
-    )
-    plt.colorbar(im, label=r"final $X(^{32}\mathrm{S})$")
-    plt.xlabel(r"$T_{9,\mathrm{peak}}$")
-    plt.ylabel(r"$\log_{10}(\tau\ \mathrm{s})$")
-    plt.tight_layout()
-    plt.savefig("heatmap_X_S32.png", dpi=300)
-    print("Saved heatmap_X_S32.png")
 
+    plt.figure()
+    plt.semilogx(rho_plot, ridge_max_plot, marker="o")
+    plt.xlabel(r"$\rho_0\ [\mathrm{g/cm^3}]$")
+    plt.ylabel(r"$\max_{T9,\tau}\ X(^{32}\mathrm{S})$")
+    plt.tight_layout()
+    plt.savefig("ridge_max_vs_rho.png", dpi=300)
+    plt.close()
+    print("Saved ridge_max_vs_rho.png")
+        
+    """plt.figure()
+        im = plt.imshow(
+            X_S32_map,
+            origin="lower",
+            aspect="auto",
+            extent=[T9_vals[0], T9_vals[-1], np.log10(tau_vals[0]), np.log10(tau_vals[-1])]
+        )
+        plt.colorbar(im, label=r"final $X(^{32}\mathrm{S})$")
+        plt.xlabel(r"$T_{9,\mathrm{peak}}$")
+        plt.ylabel(r"$\log_{10}(\tau\ \mathrm{s})$")
+        plt.tight_layout()
+        #plt.savefig("heatmap_X_S32.png", dpi=300)
+        plt.savefig(f"heatmap_X_S32_rho{rho0:.1e}.png", dpi=300)
+    print("Saved heatmap_X_S32.png")"""
+
+        
 if __name__ == "__main__":
     main()
